@@ -28,19 +28,29 @@ export default async function Home() {
               {isAdmin ? "／全員の提案を表示中" : "／自分の提案を表示中"}
             </p>
           </div>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button
-              type="submit"
-              className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          <div className="flex shrink-0 items-center gap-2">
+            {isAdmin && (
+              <Link
+                href="/admin/users"
+                className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              >
+                ユーザー管理
+              </Link>
+            )}
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/login" });
+              }}
             >
-              ログアウト
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+              >
+                ログアウト
+              </button>
+            </form>
+          </div>
         </header>
 
         <div className="mb-5 flex justify-end">
