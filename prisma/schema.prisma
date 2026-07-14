@@ -1,0 +1,68 @@
+// Prisma スキーマ（データベースの設計図）
+// 詳細: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 役割：一般社員 か 管理者 か
+enum Role {
+  EMPLOYEE
+  ADMIN
+}
+
+// 提案の状態
+enum ProposalStatus {
+  PENDING // 未対応
+  IN_REVIEW // 検討中
+  ANSWERED // 回答済
+}
+
+// 回答の結論
+enum Decision {
+  ADOPTED // 採用
+  REJECTED // 不採用
+  ON_HOLD // 保留
+}
+
+// 社員（利用者）
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(EMPLOYEE)
+  createdAt    DateTime @default(now())
+
+  // この人が投稿した提案
+  proposals Proposal[] @relation("AuthorProposals")
+  // この人（管理者）が回答した提案
+  responses Proposal[] @relation("ResponderProposals")
+}
+
+// 業務提案
+model Proposal {
+  id             String         @id @default(cuid())
+  title          String // タイトル
+  content        String // 提案の内容（詳細）
+  expectedEffect String // 期待される効果・現状の課題
+  status         ProposalStatus @default(PENDING)
+  decision       Decision? // 採用/不採用/保留（回答時に設定）
+  responseText   String? // 管理者からの回答文
+  respondedAt    DateTime? // 回答した日時
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // 提案者
+  authorId String
+  author   User   @relation("AuthorProposals", fields: [authorId], references: [id], onDelete: Cascade)
+
+  // 回答した管理者
+  respondedById String?
+  respondedBy   User?   @relation("ResponderProposals", fields: [respondedById], references: [id])
+}
