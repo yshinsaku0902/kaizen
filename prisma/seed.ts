@@ -17,17 +17,22 @@ async function main() {
   const name = process.env.ADMIN_NAME ?? "管理者";
 
   const passwordHash = await bcrypt.hash(password, 10);
+  // ADMIN_PASSWORD を明示指定したときだけ既存管理者のパスワードも更新する。
+  // （未指定＝デフォルトのときは、既存の管理者パスワードを勝手に戻さない）
+  const passwordProvided = !!process.env.ADMIN_PASSWORD;
 
   const admin = await prisma.user.upsert({
     where: { email },
-    update: {}, // 既に存在する場合は何も変更しない
+    update: passwordProvided ? { passwordHash } : {},
     create: { email, name, passwordHash, role: "ADMIN" },
   });
 
   console.log(`✅ 管理者を用意しました: ${admin.email} (role=${admin.role})`);
-  if (!process.env.ADMIN_PASSWORD) {
+  if (passwordProvided) {
+    console.log("🔑 ADMIN_PASSWORD で管理者のパスワードを設定/更新しました。");
+  } else {
     console.log(
-      "⚠  ADMIN_PASSWORD 未指定のため初期パスワード 'changeme123' を使用しました。ログイン後に必ず変更してください。",
+      "⚠  ADMIN_PASSWORD 未指定のため初期パスワード 'changeme123' を使用しました（既存ユーザーのパスワードは変更していません）。",
     );
   }
 }
