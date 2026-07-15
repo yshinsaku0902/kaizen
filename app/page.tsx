@@ -10,7 +10,6 @@ import {
   statusBadgeClass,
   decisionLabel,
   decisionBadgeClass,
-  formatDate,
 } from "@/app/lib/labels";
 import type { ProposalStatus } from "@/app/generated/prisma/enums";
 
@@ -141,15 +140,14 @@ export default async function Home({
             )}
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-2">
             {proposals.map((p) => (
               <li key={p.id}>
                 <Link
                   href={`/proposals/${p.id}`}
-                  className="block rounded-2xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-5 py-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600"
                 >
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-medium text-zinc-900 dark:text-zinc-50">
+                  <h2 className="truncate font-medium text-zinc-900 dark:text-zinc-50">
                     {p.title}
                   </h2>
                   <div className="flex shrink-0 gap-1.5">
@@ -166,31 +164,6 @@ export default async function Home({
                       </span>
                     )}
                   </div>
-                </div>
-                <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  {p.content}
-                </p>
-                <div className="mt-3 flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500">
-                  {isAdmin && <span>提案者：{p.author.name}</span>}
-                  {isAdmin && <span aria-hidden>·</span>}
-                  <span>{formatDate(p.createdAt)}</span>
-                </div>
-                {p.status === "ANSWERED" && p.responseText && (
-                  <div className="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
-                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                      管理者からの回答
-                    </p>
-                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
-                      {p.responseText}
-                    </p>
-                    {p.implementationPlan && (
-                      <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
-                        <span className="text-zinc-500 dark:text-zinc-400">実施する改善策：</span>
-                        {p.implementationPlan}
-                      </p>
-                    )}
-                  </div>
-                )}
                 </Link>
               </li>
             ))}
