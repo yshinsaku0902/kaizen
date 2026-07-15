@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { signOut } from "@/auth";
 import { requireUser } from "@/app/lib/dal";
-import {
-  listProposalsFor,
-  countProposalsByStatus,
-} from "@/app/lib/proposals";
+import { listProposals, countProposalsByStatus } from "@/app/lib/proposals";
 import {
   statusLabel,
   statusBadgeClass,
@@ -29,8 +26,8 @@ export default async function Home({
   const isAdmin = user.role === "ADMIN";
   const activeStatus = toStatus((await searchParams).status);
   const [proposals, counts] = await Promise.all([
-    listProposalsFor(user, activeStatus),
-    countProposalsByStatus(user),
+    listProposals(activeStatus),
+    countProposalsByStatus(),
   ]);
   const total = counts.PENDING + counts.IN_REVIEW + counts.ANSWERED;
 
@@ -51,8 +48,7 @@ export default async function Home({
               業務改善提案
             </h1>
             <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-              {user.name}（{isAdmin ? "管理者" : "社員"}）
-              {isAdmin ? "／全員の提案を表示中" : "／自分の提案を表示中"}
+              {user.name}（{isAdmin ? "管理者" : "社員"}）／全員の提案を表示中
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">

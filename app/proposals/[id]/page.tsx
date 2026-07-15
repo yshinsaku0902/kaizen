@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/app/lib/dal";
-import { getProposalForViewer } from "@/app/lib/proposals";
+import { getProposal } from "@/app/lib/proposals";
 import {
   statusLabel,
   statusBadgeClass,
@@ -20,7 +20,7 @@ export default async function ProposalDetailPage({
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const proposal = await getProposalForViewer(id, user);
+  const proposal = await getProposal(id);
 
   // 存在しない or 閲覧権限なしは 404 扱い
   if (!proposal) {
