@@ -12,6 +12,7 @@ import {
 import { setProposalStatus } from "../actions";
 import { ResponseForm } from "./response-form";
 import { WithdrawButton } from "./withdraw-button";
+import { QuestionForm } from "./question-form";
 
 export default async function ProposalDetailPage({
   params,
@@ -166,6 +167,30 @@ export default async function ProposalDetailPage({
           </section>
         )}
 
+        {/* 管理者からの質問（記録した履歴。閲覧者全員に表示） */}
+        {proposal.questions.length > 0 && (
+          <section className="mt-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+            <h2 className="font-medium text-zinc-900 dark:text-zinc-50">
+              管理者からの質問
+            </h2>
+            <ul className="mt-3 flex flex-col gap-3">
+              {proposal.questions.map((q) => (
+                <li
+                  key={q.id}
+                  className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50"
+                >
+                  <p className="whitespace-pre-wrap text-zinc-900 dark:text-zinc-100">
+                    {q.body}
+                  </p>
+                  <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
+                    {q.askedBy.name} · {formatDate(q.createdAt)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {/* 管理者向け：回答フォーム（未回答なら記入、回答済なら修正） */}
         {isAdmin && (
           <section className="mt-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
@@ -178,6 +203,19 @@ export default async function ProposalDetailPage({
               currentResponseText={proposal.responseText}
               currentImplementationPlan={proposal.implementationPlan}
             />
+          </section>
+        )}
+
+        {/* 管理者向け：提案者への質問を記録するフォーム */}
+        {isAdmin && (
+          <section className="mt-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
+            <h2 className="mb-1 font-medium text-zinc-900 dark:text-zinc-50">
+              提案者に質問する
+            </h2>
+            <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
+              質問を記録します。提案者（{proposal.author.name}）もこのページで確認できます。
+            </p>
+            <QuestionForm proposalId={proposal.id} />
           </section>
         )}
       </div>

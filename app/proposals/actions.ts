@@ -172,3 +172,33 @@ export async function respondToProposal(
 
   redirect(`/proposals/${id}`);
 }
+
+export type AskQuestionState =
+  | {
+      error?: string;
+      success?: string;
+      value?: string;
+    }
+  | undefined;
+
+// 管理者が提案者への質問を提案に記録する Server Action。
+export async function askQuestion(
+  id: string,
+  _prevState: AskQuestionState,
+  formData: FormData,
+): Promise<AskQuestionState> {
+  const admin = await requireAdmin();
+
+  const body = String(formData.get("question") ?? "").trim();
+  if (!body) return { error: "質問内容を入力してください。", value: body };
+
+  const proposal = await prisma.proposal.findUnique({ where: { id } });
+  if (!proposal) return { error: "提案が見つかりません。" };
+
+  await prisma.question.create({
+    data: { body, proposalId: id, askedById: admin.id },
+  });
+
+  revalidatePath(`/proposals/${id}`);
+  return { success: "質問を記録しました。" };
+}
