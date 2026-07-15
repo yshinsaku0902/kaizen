@@ -43,6 +43,8 @@ model User {
   proposals Proposal[] @relation("AuthorProposals")
   // この人（管理者）が回答した提案
   responses Proposal[] @relation("ResponderProposals")
+  // この人（管理者）が送った質問
+  questions Question[] @relation("AskedQuestions")
 }
 
 // 業務提案
@@ -66,4 +68,22 @@ model Proposal {
   // 回答した管理者
   respondedById String?
   respondedBy   User?   @relation("ResponderProposals", fields: [respondedById], references: [id])
+
+  // 管理者からの質問（メール送信済みの履歴）
+  questions Question[]
+}
+
+// 管理者が提案者へ送った質問（メール送信し、記録として残す）
+model Question {
+  id        String   @id @default(cuid())
+  body      String // 質問内容
+  createdAt DateTime @default(now())
+
+  // 対象の提案
+  proposalId String
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  // 質問した管理者
+  askedById String
+  askedBy   User   @relation("AskedQuestions", fields: [askedById], references: [id])
 }

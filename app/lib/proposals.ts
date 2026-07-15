@@ -35,6 +35,10 @@ export async function getProposal(id: string) {
     include: {
       author: { select: { name: true, email: true } },
       respondedBy: { select: { name: true } },
+      questions: {
+        orderBy: { createdAt: "asc" },
+        include: { askedBy: { select: { name: true } } },
+      },
     },
   });
 }

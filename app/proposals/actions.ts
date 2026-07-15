@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { requireUser, requireAdmin } from "@/app/lib/dal";
 import { prisma } from "@/app/lib/prisma";
+import { sendQuestionEmail } from "@/app/lib/email";
 import { Decision } from "@/app/generated/prisma/enums";
 
 export type CreateProposalState =
@@ -171,4 +173,61 @@ export async function respondToProposal(
   });
 
   redirect(`/proposals/${id}`);
+}
+
+export type AskQuestionState =
+  | {
+      error?: string;
+      success?: string;
+      value?: string;
+    }
+  | undefined;
+
+// 管理者が提案者へ質問をメール送信し、記録として残す Server Action。
+export async function askQuestion(
+  id: string,
+  _prevState: AskQuestionState,
+  formData: FormData,
+): Promise<AskQuestionState> {
+  const admin = await requireAdmin();
+
+  const body = String(formData.get("question") ?? "").trim();
+  if (!body) return { error: "質問内容を入力してください。", value: body };
+
+  const proposal = await prisma.proposal.findUnique({
+    where: { id },
+    include: { author: { select: { email: true } } },
+  });
+  if (!proposal) return { error: "提案が見つかりません。" };
+
+  // メール本文に載せる提案ページの URL を組み立てる。
+  const h = await headers();
+  const host = h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const proposalUrl = `${proto}://${host}/proposals/${id}`;
+
+  try {
+    await sendQuestionEmail({
+      to: proposal.author.email,
+      replyTo: admin.email ?? undefined,
+      proposalTitle: proposal.title,
+      proposalUrl,
+      question: body,
+      askerName: admin.name ?? "管理者",
+    });
+  } catch (e) {
+    console.error("[askQuestion] メール送信に失敗:", e);
+    return {
+      error: "メール送信に失敗しました。SMTP 設定をご確認ください。",
+      value: body,
+    };
+  }
+
+  // 送信できたら記録を残す。
+  await prisma.question.create({
+    data: { body, proposalId: id, askedById: admin.id },
+  });
+
+  revalidatePath(`/proposals/${id}`);
+  return { success: "質問をメールで送信しました。" };
 }

@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // nodemailer は Node 専用パッケージなのでバンドルせず外部依存として扱う
+  serverExternalPackages: ["nodemailer"],
 };
 
 export default nextConfig;
