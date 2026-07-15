@@ -175,6 +175,22 @@ export default async function Home({
                   {isAdmin && <span aria-hidden>·</span>}
                   <span>{formatDate(p.createdAt)}</span>
                 </div>
+                {p.status === "ANSWERED" && p.responseText && (
+                  <div className="mt-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                      管理者からの回答
+                    </p>
+                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
+                      {p.responseText}
+                    </p>
+                    {p.implementationPlan && (
+                      <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
+                        <span className="text-zinc-500 dark:text-zinc-400">実施する改善策：</span>
+                        {p.implementationPlan}
+                      </p>
+                    )}
+                  </div>
+                )}
                 </Link>
               </li>
             ))}
