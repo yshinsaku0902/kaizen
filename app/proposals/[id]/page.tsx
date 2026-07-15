@@ -9,7 +9,9 @@ import {
   decisionBadgeClass,
   formatDate,
 } from "@/app/lib/labels";
+import { setProposalStatus } from "../actions";
 import { ResponseForm } from "./response-form";
+import { WithdrawButton } from "./withdraw-button";
 
 export default async function ProposalDetailPage({
   params,
@@ -26,6 +28,7 @@ export default async function ProposalDetailPage({
   }
 
   const isAdmin = user.role === "ADMIN";
+  const isAuthor = proposal.authorId === user.id;
   const isAnswered = proposal.status === "ANSWERED";
 
   return (
@@ -83,6 +86,50 @@ export default async function ProposalDetailPage({
             </p>
           </section>
         </article>
+
+        {/* 提案者本人：回答前は編集・取り下げが可能 */}
+        {isAuthor && !isAnswered && (
+          <div className="mt-4 flex items-center gap-2">
+            <Link
+              href={`/proposals/${proposal.id}/edit`}
+              className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            >
+              編集する
+            </Link>
+            <WithdrawButton proposalId={proposal.id} />
+          </div>
+        )}
+
+        {/* 管理者：回答前は受付状況（未対応⇄検討中）を切り替えられる */}
+        {isAdmin && !isAnswered && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              受付状況：
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                {statusLabel[proposal.status]}
+              </span>
+            </span>
+            {proposal.status === "PENDING" ? (
+              <form action={setProposalStatus.bind(null, proposal.id, "IN_REVIEW")}>
+                <button
+                  type="submit"
+                  className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                >
+                  検討中にする
+                </button>
+              </form>
+            ) : (
+              <form action={setProposalStatus.bind(null, proposal.id, "PENDING")}>
+                <button
+                  type="submit"
+                  className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                >
+                  未対応に戻す
+                </button>
+              </form>
+            )}
+          </div>
+        )}
 
         {/* 回答（回答済のとき表示） */}
         {isAnswered && proposal.responseText && (

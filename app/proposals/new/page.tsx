@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireUser } from "@/app/lib/dal";
-import { ProposalForm } from "./proposal-form";
+import { ProposalForm } from "../proposal-form";
+import { createProposal } from "../actions";
 
 export default async function NewProposalPage() {
   await requireUser();
@@ -22,7 +23,7 @@ export default async function NewProposalPage() {
         </p>
 
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-          <ProposalForm />
+          <ProposalForm action={createProposal} />
         </div>
       </div>
     </div>
