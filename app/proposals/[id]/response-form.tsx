@@ -11,10 +11,12 @@ export function ResponseForm({
   proposalId,
   currentDecision,
   currentResponseText,
+  currentImplementationPlan,
 }: {
   proposalId: string;
   currentDecision: Decision | null;
   currentResponseText: string | null;
+  currentImplementationPlan: string | null;
 }) {
   // proposalId を第1引数に束縛し、(prevState, formData) 形式にする
   const action = respondToProposal.bind(null, proposalId);
@@ -25,6 +27,8 @@ export function ResponseForm({
 
   const selectedDecision = state?.values?.decision ?? currentDecision ?? "";
   const responseText = state?.values?.responseText ?? currentResponseText ?? "";
+  const implementationPlan =
+    state?.values?.implementationPlan ?? currentImplementationPlan ?? "";
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -77,6 +81,23 @@ export function ResponseForm({
             {state.errors.responseText}
           </p>
         )}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label
+          htmlFor="implementationPlan"
+          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+        >
+          実施する改善策（任意）
+        </label>
+        <textarea
+          id="implementationPlan"
+          name="implementationPlan"
+          rows={4}
+          defaultValue={implementationPlan}
+          placeholder="採用する場合に、実際に実施する施策・スケジュールなどを記入してください。"
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-100"
+        />
       </div>
 
       <div>

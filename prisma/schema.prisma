@@ -54,6 +54,7 @@ model Proposal {
   status         ProposalStatus @default(PENDING)
   decision       Decision? // 採用/不採用/保留（回答時に設定）
   responseText   String? // 管理者からの回答文
+  implementationPlan String? // 経営側が実施する改善策（採用時の実施内容など）
   respondedAt    DateTime? // 回答した日時
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
