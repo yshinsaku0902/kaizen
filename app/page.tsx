@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { signOut } from "@/auth";
 import { requireUser } from "@/app/lib/dal";
-import { listProposalsFor } from "@/app/lib/proposals";
+import {
+  listProposalsFor,
+  countProposalsByStatus,
+} from "@/app/lib/proposals";
 import {
   statusLabel,
   statusBadgeClass,
@@ -9,11 +12,36 @@ import {
   decisionBadgeClass,
   formatDate,
 } from "@/app/lib/labels";
+import type { ProposalStatus } from "@/app/generated/prisma/enums";
 
-export default async function Home() {
+// 絞り込みタブに使う有効なステータスかどうか。
+function toStatus(value?: string): ProposalStatus | undefined {
+  return value === "PENDING" || value === "IN_REVIEW" || value === "ANSWERED"
+    ? value
+    : undefined;
+}
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
-  const proposals = await listProposalsFor(user);
+  const activeStatus = toStatus((await searchParams).status);
+  const [proposals, counts] = await Promise.all([
+    listProposalsFor(user, activeStatus),
+    countProposalsByStatus(user),
+  ]);
+  const total = counts.PENDING + counts.IN_REVIEW + counts.ANSWERED;
+
+  // 絞り込みタブの定義（すべて＋各ステータス、件数バッジ付き）。
+  const filters: { value: ProposalStatus | undefined; label: string; count: number }[] = [
+    { value: undefined, label: "すべて", count: total },
+    { value: "PENDING", label: statusLabel.PENDING, count: counts.PENDING },
+    { value: "IN_REVIEW", label: statusLabel.IN_REVIEW, count: counts.IN_REVIEW },
+    { value: "ANSWERED", label: statusLabel.ANSWERED, count: counts.ANSWERED },
+  ];
 
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50 px-4 py-12 dark:bg-black">
@@ -59,7 +87,31 @@ export default async function Home() {
           </div>
         </header>
 
-        <div className="mb-5 flex justify-end">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {filters.map((f) => {
+              const active = activeStatus === f.value;
+              return (
+                <Link
+                  key={f.label}
+                  href={f.value ? `/?status=${f.value}` : "/"}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                    active
+                      ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                      : "border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                  }`}
+                >
+                  {f.label}
+                  <span
+                    className={`text-xs ${active ? "opacity-70" : "text-zinc-400 dark:text-zinc-500"}`}
+                  >
+                    {f.count}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
           <Link
             href="/proposals/new"
             className="rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
@@ -70,15 +122,23 @@ export default async function Home() {
 
         {proposals.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white py-16 text-center dark:border-zinc-700 dark:bg-zinc-950">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              まだ提案がありません。
-            </p>
-            <Link
-              href="/proposals/new"
-              className="mt-2 inline-block text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
-            >
-              最初の提案を投稿する
-            </Link>
+            {activeStatus ? (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                「{statusLabel[activeStatus]}」の提案はありません。
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  まだ提案がありません。
+                </p>
+                <Link
+                  href="/proposals/new"
+                  className="mt-2 inline-block text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
+                >
+                  最初の提案を投稿する
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <ul className="flex flex-col gap-3">
