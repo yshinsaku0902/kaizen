@@ -127,6 +127,7 @@ export type RespondState =
       values?: {
         decision: string;
         responseText: string;
+        implementationPlan: string;
       };
     }
   | undefined;
@@ -141,6 +142,10 @@ export async function respondToProposal(
 
   const decision = String(formData.get("decision") ?? "");
   const responseText = String(formData.get("responseText") ?? "").trim();
+  // 実施する改善策は任意入力（未記入なら NULL 保存）
+  const implementationPlan = String(
+    formData.get("implementationPlan") ?? "",
+  ).trim();
 
   const errors: NonNullable<RespondState>["errors"] = {};
   const isValidDecision = (Object.values(Decision) as string[]).includes(
@@ -150,7 +155,7 @@ export async function respondToProposal(
   if (!responseText) errors.responseText = "回答文を入力してください。";
 
   if (Object.keys(errors).length > 0) {
-    return { errors, values: { decision, responseText } };
+    return { errors, values: { decision, responseText, implementationPlan } };
   }
 
   await prisma.proposal.update({
@@ -158,6 +163,7 @@ export async function respondToProposal(
     data: {
       decision: decision as Decision,
       responseText,
+      implementationPlan: implementationPlan || null,
       status: "ANSWERED",
       respondedById: admin.id,
       respondedAt: new Date(),

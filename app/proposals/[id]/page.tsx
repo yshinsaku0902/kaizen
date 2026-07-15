@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/app/lib/dal";
-import { getProposalForViewer } from "@/app/lib/proposals";
+import { getProposal } from "@/app/lib/proposals";
 import {
   statusLabel,
   statusBadgeClass,
@@ -20,7 +20,7 @@ export default async function ProposalDetailPage({
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const proposal = await getProposalForViewer(id, user);
+  const proposal = await getProposal(id);
 
   // 存在しない or 閲覧権限なしは 404 扱い
   if (!proposal) {
@@ -149,6 +149,16 @@ export default async function ProposalDetailPage({
             <p className="mt-2 whitespace-pre-wrap text-zinc-900 dark:text-zinc-100">
               {proposal.responseText}
             </p>
+            {proposal.implementationPlan && (
+              <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                  実施する改善策
+                </h3>
+                <p className="mt-1.5 whitespace-pre-wrap text-zinc-900 dark:text-zinc-100">
+                  {proposal.implementationPlan}
+                </p>
+              </div>
+            )}
             <p className="mt-3 text-xs text-zinc-400 dark:text-zinc-500">
               {proposal.respondedBy?.name ?? "管理者"}
               {proposal.respondedAt && ` · ${formatDate(proposal.respondedAt)}`}
@@ -166,6 +176,7 @@ export default async function ProposalDetailPage({
               proposalId={proposal.id}
               currentDecision={proposal.decision}
               currentResponseText={proposal.responseText}
+              currentImplementationPlan={proposal.implementationPlan}
             />
           </section>
         )}
