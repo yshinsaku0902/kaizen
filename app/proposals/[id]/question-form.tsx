@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef } from "react";
 import { askQuestion, type AskQuestionState } from "../actions";
 
-// 管理者が提案者へ質問をメール送信するフォーム。
+// 管理者が提案者への質問を記録するフォーム。
 export function QuestionForm({ proposalId }: { proposalId: string }) {
   const action = askQuestion.bind(null, proposalId);
   const [state, formAction, pending] = useActionState<AskQuestionState, FormData>(
@@ -23,7 +23,7 @@ export function QuestionForm({ proposalId }: { proposalId: string }) {
         name="question"
         rows={3}
         defaultValue={state?.value ?? ""}
-        placeholder="提案者に確認したいことを記入してください。メールで送信されます。"
+        placeholder="提案者に確認したいことを記入してください。提案に記録され、提案者もこのページで確認できます。"
         className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-100"
       />
       {state?.error && (
@@ -40,7 +40,7 @@ export function QuestionForm({ proposalId }: { proposalId: string }) {
           disabled={pending}
           className="rounded-full bg-zinc-900 px-5 py-2.5 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
-          {pending ? "送信中…" : "質問をメール送信"}
+          {pending ? "記録中…" : "質問を記録"}
         </button>
       </div>
     </form>

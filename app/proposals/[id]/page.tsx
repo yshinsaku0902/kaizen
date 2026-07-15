@@ -167,7 +167,7 @@ export default async function ProposalDetailPage({
           </section>
         )}
 
-        {/* 管理者からの質問（メール送信済みの履歴。閲覧者全員に表示） */}
+        {/* 管理者からの質問（記録した履歴。閲覧者全員に表示） */}
         {proposal.questions.length > 0 && (
           <section className="mt-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
             <h2 className="font-medium text-zinc-900 dark:text-zinc-50">
@@ -183,7 +183,7 @@ export default async function ProposalDetailPage({
                     {q.body}
                   </p>
                   <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
-                    {q.askedBy.name} · {formatDate(q.createdAt)} · メール送信済
+                    {q.askedBy.name} · {formatDate(q.createdAt)}
                   </p>
                 </li>
               ))}
@@ -206,14 +206,14 @@ export default async function ProposalDetailPage({
           </section>
         )}
 
-        {/* 管理者向け：提案者へ質問をメール送信するフォーム */}
+        {/* 管理者向け：提案者への質問を記録するフォーム */}
         {isAdmin && (
           <section className="mt-4 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
             <h2 className="mb-1 font-medium text-zinc-900 dark:text-zinc-50">
               提案者に質問する
             </h2>
             <p className="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
-              入力した質問を提案者（{proposal.author.name}）にメールで送信します。
+              質問を記録します。提案者（{proposal.author.name}）もこのページで確認できます。
             </p>
             <QuestionForm proposalId={proposal.id} />
           </section>
